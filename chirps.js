@@ -4,7 +4,7 @@ var login = require('./login');
 var db = new (require('locallydb'))('./.data');
 var chirps = db.collection('chirps');
 
-var chirpsRouter = router.route('/api/chirps')
+router.route('/api/chirps')
   .all(login.required)
   .get(function (req, res){
     res.json(chirps.toArray());
@@ -22,4 +22,4 @@ var chirpsRouter = router.route('/api/chirps')
     res.json(chirps.get(id));
   });
 
-module.exports = chirpsRouter;
+module.exports = router;

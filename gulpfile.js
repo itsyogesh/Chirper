@@ -10,9 +10,12 @@ gulp.task('browserify', function(){
 	gulp.src('./src/main.js')
 		.pipe(plumber())
 		.pipe(through2.obj(function (file, enc, next){
-			browserify(file.path, {'debug': true})
+			browserify(file.path)
 				.transform('reactify')
 				.bundle(function(err, res){
+					if(err){
+						console.log(err);
+					}
 					file.contents = res;
 					next(null, file);
 				})
