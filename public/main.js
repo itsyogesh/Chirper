@@ -23577,7 +23577,7 @@ dispatcher.register(function(action){
   }
 });
 
-},{"./actions":205,"./constants":209,"./dispatcher":210}],205:[function(require,module,exports){
+},{"./actions":205,"./constants":210,"./dispatcher":211}],205:[function(require,module,exports){
 var dispatcher = require('./dispatcher');
 var constants = require('./constants');
 
@@ -23649,7 +23649,7 @@ var actions = {
 
 module.exports = actions;
 
-},{"./constants":209,"./dispatcher":210}],206:[function(require,module,exports){
+},{"./constants":210,"./dispatcher":211}],206:[function(require,module,exports){
 var React = require('react');
 var RouteHandler = require('react-router').RouteHandler;
 
@@ -23725,14 +23725,50 @@ module.exports = ChirpInput;
 
 },{"react":203}],208:[function(require,module,exports){
 var React = require('react');
+
+var ChirpList = React.createClass({displayName: "ChirpList",
+  render: function() {
+
+    var items = this.props.chirps.map(function (chirp){
+      return React.createElement("li", {key: chirp.cid}, 
+        React.createElement("strong", null, " ", chirp.username), " said \"", chirp.text, "\""
+        )
+    });
+
+    return React.createElement("ul", null, " ", items, " ")
+  }
+});
+
+module.exports = ChirpList;
+
+},{"react":203}],209:[function(require,module,exports){
+var React = require('react');
 var ChirpInput = require('./ChirpInput');
 var actions = require('../actions');
+var ChirpList = require('./ChirpList');
+
+var ChirpStore = require('../stores/chirps');
 
 var Home = React.createClass({displayName: "Home",
+  getInitialState: function(){
+    return {
+      chirps: ChirpStore.all()
+    }
+  },
+  componentDidMount: function(){
+    ChirpStore.addChangeListener(this.onChange);
+  },
+  onChange: function(){
+    this.setState(this.getInitialState());
+  },
+  componentWillUnmount: function(){
+    ChirpStore.removeChangeListener(this.onChange);
+  },
   render: function() {
     return (
       React.createElement("div", null, 
-        React.createElement(ChirpInput, {onSave: this.saveChirp})
+        React.createElement(ChirpInput, {onSave: this.saveChirp}), 
+        React.createElement(ChirpList, {chirps: this.state.chirps})
       )
 
     );
@@ -23744,7 +23780,7 @@ var Home = React.createClass({displayName: "Home",
 
 module.exports = Home;
 
-},{"../actions":205,"./ChirpInput":207,"react":203}],209:[function(require,module,exports){
+},{"../actions":205,"../stores/chirps":213,"./ChirpInput":207,"./ChirpList":208,"react":203}],210:[function(require,module,exports){
 module.exports = {
   chirp : "chirp",
   chirped : "chirped",
@@ -23760,7 +23796,7 @@ module.exports = {
   unfollowed: 'unfollowed'
 };
 
-},{}],210:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 var flux = require('flux');
 
 var dispatcher = new flux.Dispatcher();
@@ -23771,14 +23807,12 @@ dispatcher.register(function (action) {
 
 module.exports = dispatcher;
 
-},{"flux":3}],211:[function(require,module,exports){
+},{"flux":3}],212:[function(require,module,exports){
 var React = require('react');
 var ReactRouter = require('react-router');
-
 var Route = ReactRouter.Route;
-
 var API = require('./API');
-var ChirpStore = require('./stores/store');
+
 
 var routes = (React.createElement(Route, {handler: require('./components/App')}, 
   React.createElement(Route, {name: "home", path: "/", handler: require('./components/Home')})
@@ -23790,7 +23824,19 @@ ReactRouter.run(routes, ReactRouter.HistoryLocation, function (Root){
   React.render(React.createElement(Root, null), document.getElementById('app'));
 });
 
-},{"./API":204,"./components/App":206,"./components/Home":208,"./stores/store":212,"react":203,"react-router":31}],212:[function(require,module,exports){
+},{"./API":204,"./components/App":206,"./components/Home":209,"react":203,"react-router":31}],213:[function(require,module,exports){
+var constants = require('../constants');
+
+var ChirpStore = require('./store').extend({
+  init: function(){
+    this.bind(constants.gotChirps, this.set);
+    this.bind(constants.chirped, this.add);
+  }
+});
+
+module.exports = ChirpStore;
+
+},{"../constants":210,"./store":214}],214:[function(require,module,exports){
 var assign = require('object-assign');
 var EventEmitterProto = require('events').EventEmitter.prototype;
 var dispatcher = require('../dispatcher');
@@ -23865,6 +23911,7 @@ exports.extend = function(methods){
     if(store.actions[action.actionType]){
       store.actions[action.actionType].forEach(function (fn){
         fn.call(store, action.data);
+        store.emitChange();
       });
     }
   });
@@ -23872,4 +23919,4 @@ exports.extend = function(methods){
   return store;
 }
 
-},{"../dispatcher":210,"events":1,"object-assign":6}]},{},[211]);
+},{"../dispatcher":211,"events":1,"object-assign":6}]},{},[212]);
