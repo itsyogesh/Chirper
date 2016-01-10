@@ -13,9 +13,6 @@ gulp.task('browserify', function(){
 			browserify(file.path)
 				.transform('reactify')
 				.bundle(function(err, res){
-					if(err){
-						console.log(err);
-					}
 					file.contents = res;
 					next(null, file);
 				})

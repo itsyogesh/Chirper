@@ -65,11 +65,6 @@ var actions = {
       data: data
     });
   }
-
-
-
-
-
 };
 
 module.exports = actions;
