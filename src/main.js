@@ -6,6 +6,7 @@ var API = require('./API');
 
 var routes = (<Route handler={require('./components/App')}>
   <Route name="home" path="/" handler={require('./components/Home')} />
+  <Route name="user" path="/user/:id" handler={require('./components/Home')} />
 </Route>);
 
 API.fetchChirps();
